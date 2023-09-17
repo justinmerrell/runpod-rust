@@ -4,6 +4,7 @@ FROM ubuntu:latest
 # Install necessary dependencies (if any). For example, if you have dynamic dependencies on certain libraries, install them here
 RUN apt-get update && apt-get install -y \
     # Example libraries (add/remove as needed):
+    ca-certificates \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
