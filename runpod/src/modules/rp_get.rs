@@ -21,6 +21,7 @@ pub fn get_jobs(job_list:Arc<Mutex<HashMap<String, Job>>>, concurrency_limit: us
     let api_key = env::var("RUNPOD_AI_API_KEY").unwrap_or_default();
     let mut headers = HeaderMap::new();
     headers.insert(header::AUTHORIZATION, HeaderValue::from_str(&api_key).unwrap());
+    headers.insert(header::ACCEPT, HeaderValue::from_static("application/json"));
 
     let client = Client::builder()
         .default_headers(headers)
@@ -67,17 +68,27 @@ async fn get_job_controller(client: &Client, job_get_url: &str, job_list: Arc<Mu
     }
 }
 
-async fn get_job(job_list:Arc<Mutex<HashMap<String, Job>>>, client: &Client, job_get_url: &str) -> Result<(), Box<dyn Error>> {
+async fn get_job(job_list: Arc<Mutex<HashMap<String, Job>>>, client: &Client, job_get_url: &str) -> Result<(), Box<dyn Error>> {
     let res = client.get(job_get_url).send().await?;
     println!("Get job response: {}", res.status());
 
     if res.status().is_success() {
-        if let Ok(job_data) = res.json::<Job>().await {
-            let mut jobs = job_list.lock().unwrap();
-            println!("Job received: {}", job_data.id);
-            jobs.insert(job_data.id.clone(), job_data);
-        } else {
-            println!("Failed to parse job data");
+        // Capture the raw response body first for debugging purposes
+        let body = res.text().await?;
+        println!("Response body: {}", body);
+
+        // Now try to parse the captured body as JSON
+        let job_data_result = serde_json::from_str::<Job>(&body);
+
+        match job_data_result {
+            Ok(job_data) => {
+                let mut jobs = job_list.lock().unwrap();
+                println!("Job received: {}", job_data.id);
+                jobs.insert(job_data.id.clone(), job_data);
+            },
+            Err(e) => {
+                println!("Failed to parse job data: {:?}", e);
+            }
         }
     }
 

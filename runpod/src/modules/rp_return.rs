@@ -15,6 +15,7 @@ pub fn job_returner(job_list: Arc<Mutex<HashMap<String, Job>>>) {
     let api_key = env::var("RUNPOD_AI_API_KEY").unwrap_or_default();
     let mut headers = HeaderMap::new();
     headers.insert(header::AUTHORIZATION, HeaderValue::from_str(&api_key).unwrap());
+    headers.insert(header::ACCEPT, HeaderValue::from_static("application/json"));
 
     let client = Client::builder()
         .default_headers(headers)
