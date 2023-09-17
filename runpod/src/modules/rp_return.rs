@@ -15,7 +15,8 @@ pub fn job_returner(job_list: Arc<Mutex<HashMap<String, Job>>>) {
     let api_key = env::var("RUNPOD_AI_API_KEY").unwrap_or_default();
     let mut headers = HeaderMap::new();
     headers.insert(header::AUTHORIZATION, HeaderValue::from_str(&api_key).unwrap());
-    headers.insert(header::ACCEPT, HeaderValue::from_static("application/json"));
+    headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("application/json"));
+
 
     let client = Client::builder()
         .default_headers(headers)
@@ -47,6 +48,7 @@ pub fn job_returner(job_list: Arc<Mutex<HashMap<String, Job>>>) {
 }
 
 async fn return_job(client: &Client, job_done_url: &str, job: &Job) -> Result<(), Box<dyn Error>> {
+    println!("Returning job {} to {}", job.id, job_done_url);
     let response = client.post(job_done_url).json(&job.input).send().await?;
 
     println!("Job {} returned with status {}", job.id, response.status());
