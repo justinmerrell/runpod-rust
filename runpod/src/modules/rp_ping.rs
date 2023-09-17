@@ -44,7 +44,7 @@ pub fn ping(job_list: Arc<Mutex<HashMap<String, Job>>>)  {
 
         let jobs_str = jobs.join(", ");
 
-        println!("Ping. Simulated.");
+        println!("Ping.");
 
         if ping_url != "PING_NOT_SET" {
             let full_ping_url = format!("{}?job_id={}", ping_url, jobs_str);

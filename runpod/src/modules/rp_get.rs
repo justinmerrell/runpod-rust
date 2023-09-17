@@ -2,6 +2,7 @@
 // Only gets a job if the job list is less than the concurrency limit.
 
 use std::time::Duration;
+use std::thread;
 use std::env;
 use std::sync::{Arc, Mutex};
 use std::error::Error;
@@ -61,6 +62,8 @@ async fn get_job_controller(client: &Client, job_get_url: &str, job_list: Arc<Mu
                 }
             }
         }
+
+        thread::sleep(Duration::from_secs(1));
     }
 }
 
@@ -71,6 +74,7 @@ async fn get_job(job_list:Arc<Mutex<HashMap<String, Job>>>, client: &Client, job
     if res.status().is_success() {
         if let Ok(job_data) = res.json::<Job>().await {
             let mut jobs = job_list.lock().unwrap();
+            println!("Job received: {}", job_data.id);
             jobs.insert(job_data.id.clone(), job_data);
         } else {
             println!("Failed to parse job data");

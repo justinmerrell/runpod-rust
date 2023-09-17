@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the compiled binary from your host to the Docker container
-COPY runpod_binary /app/my_rust_app
+COPY runpod-rust /app/my_rust_app
 
 # Give execution permissions to the binary
 RUN chmod +x /app/my_rust_app
