@@ -29,15 +29,15 @@ pub fn job_returner(job_list: Arc<Mutex<HashMap<String, Job>>>) {
 
     let runtime = tokio::runtime::Runtime::new().unwrap();
     loop {
-        for job in job_list.lock().unwrap().values() {
-            if job.input.contains_key("output") {
+        for (_job_id, job) in job_list.lock().unwrap().iter() {
+            if job.output.is_some() {
 
                 match runtime.block_on(return_job(&client, &job_done_url, &job)) {
-                    Ok(_) => println!("Job {} returned", job.id),
-                    Err(e) => println!("Job {} failed: {}", job.id, e),
+                    Ok(_) => println!("Job {} returned", _job_id),
+                    Err(e) => println!("Job {} failed: {}", _job_id, e),
                 }
 
-                job_list.lock().unwrap().remove(&job.id);
+                job_list.lock().unwrap().remove(_job_id);
             }
         }
 

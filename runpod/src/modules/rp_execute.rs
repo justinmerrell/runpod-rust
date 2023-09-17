@@ -9,9 +9,9 @@ const SLEEP_TIME: Duration = Duration::from_secs(1);
 
 pub fn job_runner(job_list: Arc<Mutex<HashMap<String, Job>>>) {
     loop {
-        for job in job_list.lock().unwrap().values() {
-            if !job.input.contains_key("output") {
-                match run_job(&job) {
+        for (_job_id, job) in job_list.lock().unwrap().iter_mut() {
+            if !job.output.is_some() {
+                match run_job(job) {
                     Ok(_) => println!("Job {} finished", job.id),
                     Err(e) => println!("Job {} failed: {}", job.id, e),
                 }
@@ -23,12 +23,15 @@ pub fn job_runner(job_list: Arc<Mutex<HashMap<String, Job>>>) {
 }
 
 
-fn run_job(job: &Job) -> Result<(), Box<dyn Error>> {
+fn run_job(job: &mut Job) -> Result<(), Box<dyn Error>> {
     let job_id = &job.id;
     let job_input = &job.input;
 
     println!("Job {} started", job_id);
     println!("Job input: {:?}", job_input);
+
+
+    job.output = Some(job_input.clone());
 
     Ok(())
 }
