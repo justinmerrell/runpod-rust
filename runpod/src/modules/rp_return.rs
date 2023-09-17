@@ -1,3 +1,4 @@
+use serde_json::json;
 use std::env;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
@@ -51,7 +52,20 @@ async fn return_job(client: &Client, job_done_url: &str, job: &Job) -> Result<()
     let job_done_url = job_done_url.replace("$ID", &job.id);
 
     println!("Returning job {} to {}", job.id, job_done_url);
-    let response = client.post(job_done_url).json(&job.input).send().await?;
+
+    let payload = match &job.output {
+        Some(output) => {
+            json!({
+                "output": output
+            })
+        }
+        None => {
+            // Handle the case where job.output is None, if needed.
+            json!({ "output": null })
+        }
+    };
+
+    let response = client.post(job_done_url).json(&payload).send().await?;
 
     println!("Job {} returned with status {}", job.id, response.status());
     Ok(())
